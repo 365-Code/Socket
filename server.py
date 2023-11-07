@@ -29,7 +29,7 @@ def countFiles(conn, addr):
         msg = conn.recv(SIZE).decode()
         if (msg == "__SENT__"):
 
-            data = f"[SERVER]: Total Files Count: {count-1}\n{compData}"
+            data = f"[SERVER]: Total Files Count: {count}\n{compData}"
             # data = data + compData
 
             conn.send(data.encode())

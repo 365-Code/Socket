@@ -29,15 +29,16 @@ def countFiles(conn, addr):
         msg = conn.recv(SIZE).decode()
         if (msg == "__SENT__"):
 
-            data = f"[SERVER]: Total Files Count: {count}\n{compData}"
+            data = f"[SERVER]: Total Files Count: {count-1}\n{compData}"
             # data = data + compData
 
             conn.send(data.encode())
             ftp = False
         else:
             f = msg.split(".")
-            if len(f) >= 2:
+            if len(f)>=2:
                 count += 1
+
             data = "[SERVER]: FILE RECEIVED"
             if "txt" in f:
                 data = "__TEXT__"

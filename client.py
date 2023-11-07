@@ -32,8 +32,7 @@ def sendFiles():
             with open(f"{pth}/{file}") as f:
                 msg = f.read()
                 client.send(msg.encode())
-            
-
+    
     msg = "__SENT__" 
     client.send(msg.encode())
     msg = client.recv(SIZE).decode()

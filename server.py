@@ -4,8 +4,8 @@ import random
 # Diffe helmen
 # One to one client
 
-host = '127.0.0.1'
-# host = socket.gethostname()
+# host = '127.0.0.1'
+host = socket.gethostname()
 port = 23000
 ADDR = (host, port)
 SIZE = 1024
@@ -20,8 +20,10 @@ def diffie_hellman_server(conn):
     private_key = 10
     # private_key = random.randint(1, p - 1)
     public_key = (g ** private_key) % p
+    client_public_key =conn.recv(SIZE).decode()
     conn.send(str(public_key).encode())
-    client_public_key = int(conn.recv(SIZE).decode())
+    # print(client_public_key)
+    client_public_key = int(client_public_key)
     shared_secret = (client_public_key ** private_key) % p
     return shared_secret
 
@@ -191,9 +193,13 @@ def handleConnections(conn, addr):
     setName(conn, addr)
     while connected:
         # msg = conn.recv(SIZE).decode()
+        # msg=custom_decrypt(encrypted_msg,5)
+        # v=conn.recv(SIZE).decode()
+        key=diffie_hellman_server(conn)
         encrypted_msg = conn.recv(SIZE).decode()
-        msg=custom_decrypt(encrypted_msg,5)
-        print(f"[CLIENT-{addr}] : {msg}")
+        # print("v=",encrypted_msg)
+        msg=custom_decrypt(encrypted_msg,key)
+        print(f"[CLIENT-{addr}] : {encrypted_msg}")
         if(msg == "countFiles()"):
             countFiles(conn, addr)
         elif (msg == "sendMsg()"):

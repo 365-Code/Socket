@@ -21,20 +21,20 @@ def replaceWords(conn):
     msg = conn.recv(SIZE).decode()
     print(msg)
     myMsg = input("Enter Your Msg: ")
-    # while replacing:
-    conn.send(myMsg.encode())
-    msg = conn.recv(SIZE).decode()
-    data = input(f"{msg}: ")
-    conn.send(data.encode())
-    if(data == "_exit"):
-        replacing = False
-        # break
+    while replacing:
+        conn.send(myMsg.encode())
+        msg = conn.recv(SIZE).decode()
+        data = input(f"{msg}: ")
+        conn.send(data.encode())
+        if(data == "_exit"):
+            replacing = False
+            break
 
-    msg = conn.recv(SIZE).decode()
-    data = input(f"{msg}: ")
-    conn.send(data.encode())
-    myMsg = conn.recv(SIZE).decode()
-    print(myMsg)
+        msg = conn.recv(SIZE).decode()
+        data = input(f"{msg}: ")
+        conn.send(data.encode())
+        myMsg = conn.recv(SIZE).decode()
+        print("[SERVER]: ",myMsg)
 
 
 # files = os.listdir('./files')

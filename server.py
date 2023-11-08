@@ -1,6 +1,6 @@
 import socket
 import threading
-
+import random
 # Diffe helmen
 # One to one client
 
@@ -13,6 +13,35 @@ DISCONNNECT_PROTOCOL = "disconnect"
 
 userList = {}
 msgList = {}
+
+def diffie_hellman_server(conn):
+    p=23
+    g=5
+    private_key = 10
+    # private_key = random.randint(1, p - 1)
+    public_key = (g ** private_key) % p
+    conn.send(str(public_key).encode())
+    client_public_key = int(conn.recv(SIZE).decode())
+    shared_secret = (client_public_key ** private_key) % p
+    return shared_secret
+
+def custom_encrypt(message, key):
+    encrypted_message = ""
+    for char in message:
+        if char.isalpha():
+            shift = key % 26 
+            if char.islower():
+                encrypted_char = chr(((ord(char) - ord('a') + shift) % 26) + ord('a'))
+            else:
+                encrypted_char = chr(((ord(char) - ord('A') + shift) % 26) + ord('A'))
+        else:
+            encrypted_char = char 
+        encrypted_message += encrypted_char
+    return encrypted_message
+
+def custom_decrypt(encrypted_message, key):
+    return custom_encrypt(encrypted_message, -key)
+
 
 def countFiles(conn, addr):
     data = "[SERVER]: ready to receive"
@@ -158,10 +187,12 @@ def getMsg(conn,addr):
 def handleConnections(conn, addr):
     print(f"[NEW CONNECTION] {addr} CONNECTED")
     connected = True
-
+    # shared_key=diffie_hellman_server(conn)
     setName(conn, addr)
     while connected:
-        msg = conn.recv(SIZE).decode()
+        # msg = conn.recv(SIZE).decode()
+        encrypted_msg = conn.recv(SIZE).decode()
+        msg=custom_decrypt(encrypted_msg,5)
         print(f"[CLIENT-{addr}] : {msg}")
         if(msg == "countFiles()"):
             countFiles(conn, addr)
@@ -191,9 +222,10 @@ def main():
     server.listen()
 
     print(f"[LISTENING] server is listening on {ADDR}")
-
+    
     while True:
         conn, addr = server.accept()
+        # shared_key=diffie_hellman_server(conn)
         thread = threading.Thread(target=handleConnections, args=(conn,addr))
         thread.start()
         print(f"[ACTIVE CONNECTIONS] {threading.active_count() - 1}")

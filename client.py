@@ -1,11 +1,11 @@
 import socket
 import os
-
-# host = socket.gethostbyname('LAPTOP-NCLJ4M38') #siddiqul
+import random
+host = socket.gethostbyname('LAPTOP-NCLJ4M38') #siddiqul
 # host = socket.gethostbyname('LAPTOP-LLHFBHBJ') #musharraf
 # host = socket.gethostbyname('LAPTOP-EHJ8VBPC') #musharraf
 
-host = '127.0.0.1'
+# host = '127.0.0.1'
 port = 23000
 ADDR = (host, port)
 SIZE = 1024
@@ -17,6 +17,29 @@ client.connect(ADDR)
 print("Client is conected")
 
 # files = os.listdir('./files')
+def diffie_hellman_client(conn):
+    p=23
+    g=5
+    private_key = int(input("Enter Private key : "))
+    public_key = (g ** private_key) % p
+    conn.send(str(public_key).encode())
+    server_public_key = int(conn.recv(SIZE).decode())
+    shared_secret = (server_public_key ** private_key) % p
+    return shared_secret
+
+def custom_encrypt(message, key):
+    encrypted_message = ""
+    for char in message:
+        if char.isalpha():
+            shift = key % 26  
+            if char.islower():
+                encrypted_char = chr(((ord(char) - ord('a') + shift) % 26) + ord('a'))
+            else:
+                encrypted_char = chr(((ord(char) - ord('A') + shift) % 26) + ord('A'))
+        else:
+            encrypted_char = char  
+        encrypted_message += encrypted_char
+    return encrypted_message
 
 def sendFiles():
     msg = client.recv(SIZE).decode()
@@ -54,13 +77,14 @@ def sendClient():
     data = input("Enter Client Name: ")
     client.send(data.encode())
     msg = client.recv(SIZE).decode()
+    clientName = data
     print(msg)
     if(msg == "No Client Found"):
         return
     
     clientConnection = True
     while clientConnection:
-        data = input(f"Enter Your Msg to {data}: ")
+        data = input(f"Enter Your Msg to {clientName}: ")
         client.send(data.encode())
         if(data == DISCONNNECT_PROTOCOL):
             clientConnection = False
@@ -74,11 +98,16 @@ def main():
     # SENDING NAME
     sendName()
     # NAME SENT
+    
 
     while connected:
+        # shared_secret = diffie_hellman_client(client)
         data = input("Enter Msg : ")
-        client.send(data.encode())
-        
+        encrypted_data=custom_encrypt(data,5)
+
+        # client.send(data.encode())
+        client.send(encrypted_data.encode())
+        # shared_secret = diffie_hellman_client(client)
         if (data == "countFiles()"):
             sendFiles()
         

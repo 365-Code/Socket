@@ -15,7 +15,6 @@ userList = {}
 msgList = {}
 
 def countFiles(conn, addr):
-
     data = "[SERVER]: ready to receive"
     conn.send(data.encode())
 
@@ -23,19 +22,50 @@ def countFiles(conn, addr):
     count = 0
     msg = ""
     data = ""
+    compData = ""
 
     while ftp:
+        wordcount = 1
         msg = conn.recv(SIZE).decode()
         if (msg == "__SENT__"):
-            data = f"[SERVER]: Total Files Count: {count}"
+
+            data = f"[SERVER]: Total Files Count: {count}\n{compData}"
+            # data = data + compData
+
             conn.send(data.encode())
             ftp = False
         else:
             f = msg.split(".")
-            if len(f) >= 2:
+            if len(f)>=2:
                 count += 1
+
             data = "[SERVER]: FILE RECEIVED"
-            conn.send(data.encode())
+            if "txt" in f:
+                data = "__TEXT__"
+                conn.send(data.encode())
+                file = conn.recv(SIZE).decode()
+
+                file.strip()
+
+                if not file:
+                    compData = f"{compData}{msg}(wordcount): 0\n"
+                
+                else:
+                    charFlag = 0
+                    for char in file:
+                        if (char == " " or char == "\n") and charFlag:
+                            charFlag = 0
+                            wordcount += 1
+                        else:
+                            charFlag = 1
+
+                    # compData = compData + f"{msg}(wordcount): " + str(wordcount) + "\n"
+                    compData = f"{compData}{msg}(wordcount): {wordcount}\n"
+
+                # print(file)
+                # conn.send( data.encode() )
+            else:
+                conn.send(data.encode())
 
 def handleClient(conn, addr):
     

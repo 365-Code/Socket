@@ -19,8 +19,6 @@ print("Client is conected")
 # files = os.listdir('./files')
 
 def sendFiles():
-
-
     msg = client.recv(SIZE).decode()
     print(msg)
     data = input("Enter File Path : ")
@@ -30,18 +28,21 @@ def sendFiles():
     for file in files:
         client.send(file.encode())
         msg = client.recv(SIZE).decode()
-        # print(msg)
-
+        if(msg == "__TEXT__"):
+            with open(f"{pth}/{file}") as f:
+                msg = f.read()
+                client.send(msg.encode())
+    
     msg = "__SENT__" 
     client.send(msg.encode())
     msg = client.recv(SIZE).decode()
-    print(msg) 
+    print(msg)
 
 def sendName():
     nameSent = False
     while not nameSent:
         data = input("Enter Unique Name: ");
-        client.send(data.encode());
+        client.send(data.encode())
         msg = client.recv(SIZE).decode()
         if msg == f"{data} Name Received":
             nameSent = True
@@ -59,7 +60,7 @@ def sendClient():
     
     clientConnection = True
     while clientConnection:
-        data = input("Enter Your Msg: ")
+        data = input(f"Enter Your Msg to {data}: ")
         client.send(data.encode())
         if(data == DISCONNNECT_PROTOCOL):
             clientConnection = False

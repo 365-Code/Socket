@@ -20,14 +20,16 @@ print("Client is conected")
 def diffie_hellman_client(conn):
     p=23
     g=5
-    private_key = int(input("Enter Private key : "))
+    # private_key = int(input("Enter Private key : "))
+    private_key = 17
     public_key = (g ** private_key) % p
     conn.send(str(public_key).encode())
     server_public_key = int(conn.recv(SIZE).decode())
     shared_secret = (server_public_key ** private_key) % p
     return shared_secret
 
-def custom_encrypt(message, key):
+def custom_encrypt(message,conn):
+    key = diffie_hellman_client(conn)
     encrypted_message = ""
     for char in message:
         if char.isalpha():
@@ -103,7 +105,8 @@ def main():
     while connected:
         # shared_secret = diffie_hellman_client(client)
         data = input("Enter Msg : ")
-        encrypted_data=custom_encrypt(data,5)
+        # encrypted_data=custom_encrypt(data,5)
+        encrypted_data=custom_encrypt(data,client)
 
         # client.send(data.encode())
         client.send(encrypted_data.encode())

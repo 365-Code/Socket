@@ -1,11 +1,11 @@
 import socket
 import threading
-import random
+import os
 # Diffe helmen
 # One to one client
 
-# host = '127.0.0.1'
-host = socket.gethostname()
+host = '127.0.0.1'
+# host = socket.gethostname()
 port = 23000
 ADDR = (host, port)
 SIZE = 1024
@@ -13,6 +13,7 @@ DISCONNNECT_PROTOCOL = "disconnect"
 
 userList = {}
 msgList = {}
+connName = ""
 
 def diffie_hellman_server(conn):
     p=23
@@ -43,7 +44,6 @@ def custom_encrypt(message, key):
 
 def custom_decrypt(encrypted_message, key):
     return custom_encrypt(encrypted_message, -key)
-
 
 def countFiles(conn, addr):
     data = "[SERVER]: ready to receive"
@@ -77,8 +77,8 @@ def countFiles(conn, addr):
                 file = conn.recv(SIZE).decode()
 
                 file.strip()
-
-                if not file:
+                
+                if file == " " or file == "":
                     compData = f"{compData}{msg}(wordcount): 0\n"
                 
                 else:
@@ -159,18 +159,23 @@ def handleClient(conn, addr):
 
 def setName(conn, addr):
     # RECEIVE NAME
-    nameReceived = False;
+    nameReceived = False
     while not nameReceived:
         name = conn.recv(SIZE).decode()
-        flag = 0
-        
+
         if (userList.get(addr)):
             msg = "Name Already Exist, ReEnter"
         else:
             msg = f"{name} Name Received"
             nameReceived = True
+            connName = name
             userList[addr] = [name, conn]
             msgList[name] = ""
+            if not os.path.isdir("users"):
+                os.mkdir("users")
+            with open(f"./users/{name}.txt", 'w') as f:
+                f.write("")
+            
         conn.send(msg.encode())
     
     # NAME RECEIVED
@@ -218,6 +223,8 @@ def handleConnections(conn, addr):
             # continue
         else:
             data = f"[SERVER] : {msg} RECEIVED\n"
+            with open(f"./users/{userList[addr][0]}.txt", "a") as f:
+                f.write(f"{msg}\n")
             conn.send(data.encode())
     conn.close()
 

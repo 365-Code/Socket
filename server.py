@@ -16,8 +16,25 @@ msgList = {}
 connName = ""
 
 def replaceWords(conn, addr):
-    clientMsg = conn.recv().decode()
-    msg = ""
+
+    msg = "Ready to replace"
+    conn.send(msg.encode())
+    replacing = True
+    # while replacing:
+    clientMsg = conn.recv(SIZE).decode()
+    msg = "Enter Word to Replace"
+    conn.send(msg.encode())
+    word = conn.recv(SIZE).decode()
+    if (word == "_exit"):
+        replacing = False
+        # break
+    msg = "Enter Word to Replace with"
+    conn.send(msg.encode())
+    replace = conn.recv(SIZE).decode()
+    clientMsg = clientMsg.replace(word,replace)
+    cMsg = f"Replaced Msg: {clientMsg}"
+    conn.send(cMsg.encode())
+
 
 
 def writeClientFile(addr, msg):
@@ -230,6 +247,8 @@ def handleConnections(conn, addr):
             # conn.send(data.encode())
             getMsg(conn, addr)
             # continue
+        elif (msg == "replaceWords()"):
+            replaceWords(conn, addr)
         else:
             data = f"[SERVER] : {msg} RECEIVED\n"
             writeClientFile(addr, msg)

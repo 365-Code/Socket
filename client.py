@@ -16,6 +16,8 @@ client.connect(ADDR)
 
 print("Client is conected")
 
+def replaceWords(conn):
+    print("replace Words")
 # files = os.listdir('./files')
 def diffie_hellman_client(conn):
     p=23

@@ -15,6 +15,15 @@ userList = {}
 msgList = {}
 connName = ""
 
+def replaceWords(conn, addr):
+    clientMsg = conn.recv().decode()
+    msg = ""
+
+
+def writeClientFile(addr, msg):
+    with open(f"./users/{userList[addr][0]}.txt", "a") as f:
+        f.write(f"{msg}\n")
+
 def diffie_hellman_server(conn):
     p=23
     g=5
@@ -223,8 +232,7 @@ def handleConnections(conn, addr):
             # continue
         else:
             data = f"[SERVER] : {msg} RECEIVED\n"
-            with open(f"./users/{userList[addr][0]}.txt", "a") as f:
-                f.write(f"{msg}\n")
+            writeClientFile(addr, msg)
             conn.send(data.encode())
     conn.close()
 

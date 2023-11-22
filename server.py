@@ -13,7 +13,44 @@ DISCONNNECT_PROTOCOL = "disconnect"
 
 userList = {}
 msgList = {}
+badWord={"Hiya", "Sup", "Hey", "Yo", "Howdy",
+    "Cool", "Sweet", "Awesome", "Rad",
+    "Seriously?", "No way!", "OMG", "Wow",
+    "Wanna", "Gonna", "Kinda", "Dunno",
+    "Lit", "Sick", "Legit", "Fire",
+    "Thanks a bunch", "Appreciate it", "Thanks a ton", "Cheers","bitch","Kill","Damn","Shit"}
 connName = ""
+
+def countMyWords(conn, addr):
+    msg = ""
+    fileName = f"{userList[addr][0]}.txt"
+    with open(f"./users/{fileName}", "r") as f:
+        msg = f.readlines()
+
+    wordcount = 0 
+    for messg in msg:
+        messg.strip()
+        if messg == " " or messg == "":
+            msg = f"Wordcount in {fileName} : 0\n"
+        else:
+            charFlag = 0
+            for char in messg:
+                if (char == " " or char =="\n") and charFlag:
+                    charFlag = 0
+                    wordcount += 1
+                else:
+                    charFlag = 1
+
+    msg = f"Wordcount in {fileName}: {wordcount}\n"
+    conn.send(msg.encode())
+    return
+
+def removebadword(msg):
+    msg=msg.lower()
+    for item in badWord:
+        item=item.lower()
+        msg = msg.replace(item, "")
+    return msg
 
 def replaceWords(conn, addr):
 
@@ -33,8 +70,6 @@ def replaceWords(conn, addr):
         replace = conn.recv(SIZE).decode()
         clientMsg = clientMsg.replace(word,replace)
         conn.send(clientMsg.encode())
-
-
 
 def writeClientFile(addr, msg):
     with open(f"./users/{userList[addr][0]}.txt", "a") as f:
@@ -109,7 +144,7 @@ def countFiles(conn, addr):
                 else:
                     charFlag = 0
                     for char in file:
-                        if (char == " " or char == "\n") and charFlag:
+                        if (char == " ") and charFlag:
                             charFlag = 0
                             wordcount += 1
                         else:
@@ -164,6 +199,7 @@ def handleClient(conn, addr):
     clientConnection = True
     while clientConnection:
         msg = conn.recv(SIZE).decode()
+        msg=removebadword(msg)
         if(msg == DISCONNNECT_PROTOCOL):
             clientConnection = False
             msg = f"DISCONNECTED TO {client.get('name')}\n"
@@ -173,6 +209,7 @@ def handleClient(conn, addr):
             getMsg()
 
         else:
+            writeClientFile(addr,msg)
             msg = f"[{sender['name']}]: {msg}\n"
             data = msgList.get(clientName) + msg
             msgList[clientName] = data
@@ -198,7 +235,7 @@ def setName(conn, addr):
             msgList[name] = ""
             if not os.path.isdir("users"):
                 os.mkdir("users")
-            with open(f"./users/{name}.txt", 'w') as f:
+            with open(f"./users/{name}.txt", 'a') as f:
                 f.write("")
             
         conn.send(msg.encode())
@@ -248,7 +285,12 @@ def handleConnections(conn, addr):
             # continue
         elif (msg == "replaceWords()"):
             replaceWords(conn, addr)
+            
+        elif (msg == "countMyWords()"):
+            countMyWords(conn, addr)
         else:
+            msg=removebadword(msg)
+            
             data = f"[SERVER] : {msg} RECEIVED\n"
             writeClientFile(addr, msg)
             conn.send(data.encode())

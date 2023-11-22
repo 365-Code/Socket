@@ -16,6 +16,10 @@ client.connect(ADDR)
 
 print("Client is conected")
 
+def countMyWords(conn):
+    msg = conn.recv(SIZE).decode()
+    print(msg)
+
 def replaceWords(conn):
     replacing = True
     msg = conn.recv(SIZE).decode()
@@ -35,8 +39,6 @@ def replaceWords(conn):
         conn.send(data.encode())
         myMsg = conn.recv(SIZE).decode()
         print("[SERVER]: ",myMsg)
-
-
 # files = os.listdir('./files')
 def diffie_hellman_client(conn):
     p=23
@@ -152,6 +154,8 @@ def main():
 
         elif (data == "replaceWords()") :
             replaceWords(client)
+        elif (data == "countMyWords()"):
+            countMyWords(client)
         else:
             # print("Waiting for server...")
             msg = client.recv(SIZE).decode()
